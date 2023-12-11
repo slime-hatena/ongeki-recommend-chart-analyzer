@@ -9,6 +9,7 @@
   "keywords": [],
   "author": "slime-hatena",
   "dependencies": {
+    "ts-node": "^10.9.2",
     "zx": "^7.2.3"
   }
 }
