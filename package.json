@@ -1,0 +1,14 @@
+{
+  "name": "ongeki-recommend-chart-analyzer",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "slime-hatena",
+  "dependencies": {
+    "zx": "^7.2.3"
+  }
+}
