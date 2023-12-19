@@ -13,6 +13,6 @@ datasource db {
 model User {
   id       Int      @id
   name     String
-  rating   Int // floatの取り扱いがめんどいので整数値で管理する
+  rating   Int // floatの取り扱いがめんどいので整数値で管理する ４ケタ
   updateAt DateTime
 }

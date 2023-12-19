@@ -17,7 +17,7 @@ async function main() {
     for (const e of element) {
       const id = parseInt(e.querySelector("td.sort_id")?.textContent ?? "");
       const name = e.querySelector("td.sort_name > a")?.textContent ?? "";
-      const rating = parseInt((e.querySelector("td.sort_rating")?.textContent ?? "").replace(".", "").replace("(", "").replace(")", ""));
+      const rating = parseInt((e.querySelector("td.sort_max")?.textContent ?? "").replace(".", "").replace("(", "").replace(")", ""));
       const time = e.querySelector("td.sort_update > span.sort-key")?.textContent ?? "";
       const date = e.querySelector("td.sort_update")?.textContent?.replace(time, "");
       const updateAt = new Date(date + ' ' + time);
