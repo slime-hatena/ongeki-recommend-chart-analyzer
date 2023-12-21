@@ -17,6 +17,16 @@ model User {
   updateAt DateTime
 }
 
+model Music {
+  key        Int    @id @default(autoincrement())
+  id         Int
+  title      String
+  difficulty Int // Basic 1, Advanced 2, Expert 3, Master 4, Lunatic 5
+  level      Int // 小数点省略 ３ケタ
+
+  @@unique([id, difficulty], name: "id_difficulty")
+}
+
 model UserNewRating {
   key    Int @id @default(autoincrement())
   userId Int
@@ -24,6 +34,7 @@ model UserNewRating {
   songId Int
   score  Int
   rating Int
+
   @@unique(fields: [userId, rank], name: "userId_rank")
 }
 
@@ -34,5 +45,6 @@ model UserOldRating {
   songId Int
   score  Int
   rating Int
+
   @@unique(fields: [userId, rank], name: "userId_rank")
 }

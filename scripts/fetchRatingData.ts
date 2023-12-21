@@ -53,7 +53,6 @@ async function main() {
       const ratings = ratingList[key];
       console.log(key, ratings.length, "users.");
       for (const user of ratings) {
-        // const content = await fetch(process.env.DATA_URL + "/user/2/rating");
         const content = await fetch(process.env.DATA_URL + "/user/" + user.id + "/rating");
 
         const body = await content.text();
