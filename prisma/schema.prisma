@@ -16,3 +16,23 @@ model User {
   rating   Int // floatの取り扱いがめんどいので整数値で管理する ４ケタ
   updateAt DateTime
 }
+
+model UserNewRating {
+  key    Int @id @default(autoincrement())
+  userId Int
+  rank   Int
+  songId Int
+  score  Int
+  rating Int
+  @@unique(fields: [userId, rank], name: "userId_rank")
+}
+
+model UserOldRating {
+  key    Int @id @default(autoincrement())
+  userId Int
+  rank   Int
+  songId Int
+  score  Int
+  rating Int
+  @@unique(fields: [userId, rank], name: "userId_rank")
+}

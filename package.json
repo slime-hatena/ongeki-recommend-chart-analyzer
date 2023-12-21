@@ -8,6 +8,7 @@
     "init": "npx prisma generate && npx prisma migrate dev",
 
     "fetchUser": "pnpm run esm ./scripts/fetchUserData.ts",
+    "fetchRating": "pnpm run esm ./scripts/fetchRatingData.ts"
   },
   "keywords": [],
   "author": "slime-hatena",
