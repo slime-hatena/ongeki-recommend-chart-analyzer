@@ -1,6 +1,9 @@
 import { PrismaClient } from '@prisma/client'
 import { JSDOM } from 'jsdom';
 
+const MIN_FETCH_RATING = 1400;
+const MAX_FETCHE_RATING = 1800;
+
 const prisma = new PrismaClient()
 
 const difficultyMap: { [key: string]: number } = {
@@ -21,18 +24,18 @@ async function main() {
   const users = await prisma.user.findMany({
     where: {
       rating: {
-        gte: 1500,
-        lt: 1709,
+        gte: MIN_FETCH_RATING,
+        lt: MAX_FETCHE_RATING,
       },
       updateAt: {
-        gte: new Date('2023-11-20')
+        gte: new Date((new Date()).setDate((new Date()).getDate() - 90)) // とりあえず90日前まで取得
       }
     },
-    orderBy: { updateAt: 'desc' },
+    orderBy: { rating: 'asc' },
   });
 
   const ratingList: { [key: number]: any[] } = {};
-  for (const u of users) {
+  for (const u of users) { // 分析側でやるからいらなくね。。。？
     const key = Math.floor(u.rating / 10) * 10;
     if (!ratingList[key]) {
       ratingList[key] = [u];
@@ -53,6 +56,12 @@ async function main() {
       const ratings = ratingList[key];
       console.log(key, ratings.length, "users.");
       for (const user of ratings) {
+        console.log();
+        console.log();
+        await sleep(3000);
+
+        console.log(user.id, user.name, user.rating);
+
         const content = await fetch(process.env.DATA_URL + "/user/" + user.id + "/rating");
 
         const body = await content.text();
@@ -60,6 +69,7 @@ async function main() {
 
         // これが取得できなければStandardユーザー > スキップ
         if (dom.window.document.querySelector("#rating_statistics > p:nth-child(4) > span")?.textContent === undefined) {
+          console.log("Skip.");
           continue;
         }
 
@@ -151,13 +161,6 @@ async function main() {
             },
           });
         }
-
-        await sleep(3000);
-
-        console.log();
-        console.log();
-        console.log();
-
       }
     }
   }
