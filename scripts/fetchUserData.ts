@@ -21,6 +21,7 @@ async function main() {
       const time = e.querySelector("td.sort_update > span.sort-key")?.textContent ?? "";
       const date = e.querySelector("td.sort_update")?.textContent?.replace(time, "");
       const updateAt = new Date(date + ' ' + time);
+      const registrationAt = new Date();
 
       await prisma.user.upsert({
         where: { id: id },
@@ -29,17 +30,19 @@ async function main() {
           name: name,
           rating: rating,
           updateAt: updateAt,
+          registrationAt: registrationAt,
         },
         update: {
           name: name,
           rating: rating,
           updateAt: updateAt,
+          registrationAt: registrationAt,
         },
       }).then((_r) => {
-        console.log(id, name, rating, updateAt);
+        console.log(id, name, rating, updateAt, registrationAt);
       }).catch((_e) => {
         console.log("Error:");
-        console.log(id, name, rating, updateAt);
+        console.log(id, name, rating, updateAt, registrationAt);
         throw e;
       });
     }
