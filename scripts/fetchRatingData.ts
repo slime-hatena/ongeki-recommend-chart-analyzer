@@ -34,134 +34,111 @@ async function main() {
     orderBy: { rating: 'asc' },
   });
 
-  const ratingList: { [key: number]: any[] } = {};
-  for (const u of users) { // 分析側でやるからいらなくね。。。？
-    const key = Math.floor(u.rating / 10) * 10;
-    if (!ratingList[key]) {
-      ratingList[key] = [u];
-    } else {
-      ratingList[key].push(u);
+  for (const user of users) {
+    console.log();
+    console.log();
+    await sleep(3000);
+
+    console.log(user.id, user.name, user.rating);
+
+    const content = await fetch(process.env.DATA_URL + "/user/" + user.id + "/rating");
+
+    const body = await content.text();
+    const dom = new JSDOM(body);
+
+    // これが取得できなければStandardユーザー > スキップ
+    if (dom.window.document.querySelector("#rating_statistics > p:nth-child(4) > span")?.textContent === undefined) {
+      console.log("Skip.");
+      continue;
     }
-  }
 
-  const keys = Object.keys(ratingList);
-  keys.sort();
-  for(const key of keys) {
-    console.log(`${key} : ${ratingList[parseInt(key)].length}`);
-  }
-  console.log(users.length, "users.");
+    // 新曲枠の取得
+    const ratingNewElements = dom.window.document.querySelectorAll("#rating_new > div:nth-child(4) > table > tbody > tr");
+    let rank = 0;
+    for (const r of ratingNewElements) {
+      ++rank;
+      const id = parseInt(((r.querySelector("td.sort_title > a") as HTMLAnchorElement)?.href ?? "")
+        .replace(process.env.DATA_URL + "user/" + user.id + "/music/", "")
+        .replace("/basic", "")
+        .replace("/advanced", "")
+        .replace("/expert", "")
+        .replace("/master", "")
+        .replace("/lunatic", ""));  // ゴリ押しが過ぎるんだけど・・・単発で動かすものだしまあええか・・・
+      const title = r.querySelector("td.sort_title")?.textContent ?? "";
+      const difficulty = difficultyMap[r.querySelector("td:nth-child(2)")?.textContent ?? ""];
+      const level = parseFloat(r.querySelector("td:nth-child(3)")?.textContent ?? "");
+      const score = parseInt((r.querySelector("td:nth-child(4)")?.textContent ?? "").replaceAll(",",""));
+      const rating = parseInt((r.querySelector("td:nth-child(5)")?.textContent ?? "").replace(".",""));
+      console.log(rank, id, title, difficulty, level, score, rating);
 
-  for (const key in ratingList) {
-    if (Object.prototype.hasOwnProperty.call(ratingList, key)) {
-      const ratings = ratingList[key];
-      console.log(key, ratings.length, "users.");
-      for (const user of ratings) {
-        console.log();
-        console.log();
-        await sleep(3000);
+      await prisma.userNewRating.upsert({
+        where: {
+          userId_rank: {
+            userId: user.id,
+            rank: rank,
+          },
+        },
+        create: {
+          userId: user.id,
+          rank: rank,
+          songId: id,
+          score: score,
+          rating: rating,
+        },
+        update: {
+          userId: user.id,
+          rank: rank,
+          songId: id,
+          score: score,
+          rating: rating,
+        },
+      });
+    }
 
-        console.log(user.id, user.name, user.rating);
+    console.log();
 
-        const content = await fetch(process.env.DATA_URL + "/user/" + user.id + "/rating");
+    // ベスト枠の取得
+    const ratingOldElements = dom.window.document.querySelectorAll("#rating_old > div:nth-child(4) > table > tbody > tr");
+    rank = 0;
+    for (const r of ratingOldElements) {
+      // 上の処理コピペ！ ちゃんとしたプロジェクトではこういうことをやってはいけない！！！
+      ++rank;
+      const id = parseInt(((r.querySelector("td.sort_title > a") as HTMLAnchorElement)?.href ?? "")
+        .replace(process.env.DATA_URL + "user/" + user.id + "/music/", "")
+        .replace("/basic", "")
+        .replace("/advanced", "")
+        .replace("/expert", "")
+        .replace("/master", "")
+        .replace("/lunatic", ""));  // ゴリ押しが過ぎるんだけど・・・単発で動かすものだしまあええか・・・
+      const title = r.querySelector("td.sort_title")?.textContent ?? "";
+      const difficulty = difficultyMap[r.querySelector("td:nth-child(2)")?.textContent ?? ""];
+      const level = parseFloat(r.querySelector("td:nth-child(3)")?.textContent ?? "");
+      const score = parseInt((r.querySelector("td:nth-child(4)")?.textContent ?? "").replaceAll(",",""));
+      const rating = parseInt((r.querySelector("td:nth-child(5)")?.textContent ?? "").replace(".",""));
+      console.log(rank, id, title, difficulty, level, score, rating);
 
-        const body = await content.text();
-        const dom = new JSDOM(body);
-
-        // これが取得できなければStandardユーザー > スキップ
-        if (dom.window.document.querySelector("#rating_statistics > p:nth-child(4) > span")?.textContent === undefined) {
-          console.log("Skip.");
-          continue;
-        }
-
-        // 新曲枠の取得
-        const ratingNewElements = dom.window.document.querySelectorAll("#rating_new > div:nth-child(4) > table > tbody > tr");
-        let rank = 0;
-        for (const r of ratingNewElements) {
-          ++rank;
-          const id = parseInt(((r.querySelector("td.sort_title > a") as HTMLAnchorElement)?.href ?? "")
-            .replace(process.env.DATA_URL + "user/" + user.id + "/music/", "")
-            .replace("/basic", "")
-            .replace("/advanced", "")
-            .replace("/expert", "")
-            .replace("/master", "")
-            .replace("/lunatic", ""));  // ゴリ押しが過ぎるんだけど・・・単発で動かすものだしまあええか・・・
-          const title = r.querySelector("td.sort_title")?.textContent ?? "";
-          const difficulty = difficultyMap[r.querySelector("td:nth-child(2)")?.textContent ?? ""];
-          const level = parseFloat(r.querySelector("td:nth-child(3)")?.textContent ?? "");
-          const score = parseInt((r.querySelector("td:nth-child(4)")?.textContent ?? "").replaceAll(",",""));
-          const rating = parseInt((r.querySelector("td:nth-child(5)")?.textContent ?? "").replace(".",""));
-          console.log(rank, id, title, difficulty, level, score, rating);
-
-          await prisma.userNewRating.upsert({
-            where: {
-              userId_rank: {
-                userId: user.id,
-                rank: rank,
-              },
-            },
-            create: {
-              userId: user.id,
-              rank: rank,
-              songId: id,
-              score: score,
-              rating: rating,
-            },
-            update: {
-              userId: user.id,
-              rank: rank,
-              songId: id,
-              score: score,
-              rating: rating,
-            },
-          });
-        }
-
-        console.log();
-
-        // ベスト枠の取得
-        const ratingOldElements = dom.window.document.querySelectorAll("#rating_old > div:nth-child(4) > table > tbody > tr");
-        rank = 0;
-        for (const r of ratingOldElements) {
-          // 上の処理コピペ！ ちゃんとしたプロジェクトではこういうことをやってはいけない！！！
-          ++rank;
-          const id = parseInt(((r.querySelector("td.sort_title > a") as HTMLAnchorElement)?.href ?? "")
-            .replace(process.env.DATA_URL + "user/" + user.id + "/music/", "")
-            .replace("/basic", "")
-            .replace("/advanced", "")
-            .replace("/expert", "")
-            .replace("/master", "")
-            .replace("/lunatic", ""));  // ゴリ押しが過ぎるんだけど・・・単発で動かすものだしまあええか・・・
-          const title = r.querySelector("td.sort_title")?.textContent ?? "";
-          const difficulty = difficultyMap[r.querySelector("td:nth-child(2)")?.textContent ?? ""];
-          const level = parseFloat(r.querySelector("td:nth-child(3)")?.textContent ?? "");
-          const score = parseInt((r.querySelector("td:nth-child(4)")?.textContent ?? "").replaceAll(",",""));
-          const rating = parseInt((r.querySelector("td:nth-child(5)")?.textContent ?? "").replace(".",""));
-          console.log(rank, id, title, difficulty, level, score, rating);
-
-          await prisma.userOldRating.upsert({
-            where: {
-              userId_rank: {
-                userId: user.id,
-                rank: rank,
-              },
-            },
-            create: {
-              userId: user.id,
-              rank: rank,
-              songId: id,
-              score: score,
-              rating: rating,
-            },
-            update: {
-              userId: user.id,
-              rank: rank,
-              songId: id,
-              score: score,
-              rating: rating,
-            },
-          });
-        }
-      }
+      await prisma.userOldRating.upsert({
+        where: {
+          userId_rank: {
+            userId: user.id,
+            rank: rank,
+          },
+        },
+        create: {
+          userId: user.id,
+          rank: rank,
+          songId: id,
+          score: score,
+          rating: rating,
+        },
+        update: {
+          userId: user.id,
+          rank: rank,
+          songId: id,
+          score: score,
+          rating: rating,
+        },
+      });
     }
   }
 }
