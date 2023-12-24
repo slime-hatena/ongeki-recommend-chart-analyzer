@@ -54,6 +54,15 @@ async function main() {
 
     // 新曲枠の取得
     const ratingNewElements = dom.window.document.querySelectorAll("#rating_new > div:nth-child(4) > table > tbody > tr");
+    // ベスト枠の取得
+    const ratingOldElements = dom.window.document.querySelectorAll("#rating_old > div:nth-child(4) > table > tbody > tr");
+
+    // 曲数が足りないユーザーは信頼性に欠けるのでスキップ
+    if (ratingNewElements.length != 15 || ratingOldElements.length != 30) {
+      console.log("Skip:", ratingNewElements.length, "songs. / ", ratingOldElements.length, "songs.");
+      continue;
+    }
+
     let rank = 0;
     for (const r of ratingNewElements) {
       ++rank;
@@ -99,8 +108,6 @@ async function main() {
 
     console.log();
 
-    // ベスト枠の取得
-    const ratingOldElements = dom.window.document.querySelectorAll("#rating_old > div:nth-child(4) > table > tbody > tr");
     rank = 0;
     for (const r of ratingOldElements) {
       // 上の処理コピペ！ ちゃんとしたプロジェクトではこういうことをやってはいけない！！！
