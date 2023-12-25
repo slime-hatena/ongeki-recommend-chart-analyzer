@@ -1,9 +1,10 @@
 import { PrismaClient } from '@prisma/client'
 import * as fs from 'fs';
 
-const MIN_ANALYZE_RATING = 1700;
-const MAX_ANALYZE_RATING = 1720;
-const OFFSET = 20;
+const generateRatingRangeList = [1400, 1450,
+  1500, 1520, 1540, 1560, 1580,
+  1600, 1610, 1620, 1630, 1640, 1650, 1660, 1670, 1680, 1690,
+  1700, 1750];
 
 const prisma = new PrismaClient()
 
@@ -94,16 +95,21 @@ async function main() {
     return map;
   }, {});
 
-  let rating = MIN_ANALYZE_RATING;
-  while (rating < MAX_ANALYZE_RATING) {
-    // 指定レーティングごとにユーザーを取得
+  // 指定レーティングごとにユーザーを取得
+  let ratingMin = 0;
+  for (const ratingMax of generateRatingRangeList) {
+    if (ratingMin == 0) {
+      ratingMin = ratingMax;
+      continue;
+    }
+
     const users = await prisma.user.findMany({
       where: {
         AND: [
           {
             rating: {
-              gte: rating,
-              lt: rating + OFFSET,
+              gte: ratingMin,
+              lt: ratingMax,
             }
           },
           {
@@ -121,7 +127,7 @@ async function main() {
       orderBy: { updateAt: 'desc' },
     });
 
-    console.log(rating, "-", (rating + OFFSET), users.length, "users.");
+    console.log(ratingMin, "-", ratingMax, users.length, "users.");
 
     const ids = users.map(user => user.id);
     const oldRatings = await prisma.userOldRating.findMany({
@@ -156,11 +162,11 @@ async function main() {
       "old": oldRatingSongs,
     }
     const path = "./result/" + now.getTime() + "/";
-    const fileName = rating + "-" + (rating + OFFSET) + ".json";
+    const fileName = ratingMin + "-" + ratingMax + ".json";
     await fs.promises.mkdir(path, { recursive: true })
     await fs.promises.writeFile((path + fileName), JSON.stringify(result), 'utf8');
 
-    rating += OFFSET;
+    ratingMin = ratingMax;
   }
 }
 
