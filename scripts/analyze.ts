@@ -24,6 +24,7 @@ async function analyseRatings(ratings: any[], userLength: number = 0) {
     title: string,
     difficulty: number,
     difficultyStr: string,
+    level: string,
     count: number,
     usePercentage: string,
     totalRating: number,
@@ -42,6 +43,7 @@ async function analyseRatings(ratings: any[], userLength: number = 0) {
         title: musicMap[key].title,
         difficulty: rating.difficulty,
         difficultyStr: "",
+        level: musicMap[key].level.toString().slice(0, -1) + "." + musicMap[key].level.toString().slice(-1),
         count: 0,
         usePercentage: "",
         totalRating: 0,
@@ -157,6 +159,8 @@ async function main() {
 
     const result = {
       "userLength": userLength,
+      "ratingMin": ratingMin.toString().slice(0, -2) + "." + ratingMin.toString().slice(-2),
+      "ratingMax": (ratingMax - 1).toString().slice(0, -2) + "." + (ratingMax - 1).toString().slice(-2),
       "date": now.toLocaleString(),
       "new": newRatingSongs,
       "old": oldRatingSongs,
