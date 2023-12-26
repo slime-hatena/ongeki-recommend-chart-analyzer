@@ -37,7 +37,7 @@ async function main() {
   for (const user of users) {
     console.log();
     console.log();
-    await sleep(3000);
+    await sleep(10000);
 
     console.log(user.id, user.name, user.rating);
 
