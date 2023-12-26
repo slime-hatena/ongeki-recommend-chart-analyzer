@@ -10,7 +10,8 @@
     "fetchUser": "pnpm run esm ./scripts/fetchUserData.ts",
     "fetchRating": "pnpm run esm ./scripts/fetchRatingData.ts",
     "fetchMusic": "pnpm run esm ./scripts/fetchMusicData.ts",
-    "analyze": "pnpm run esm ./scripts/analyze.ts"
+    "analyze": "pnpm run esm ./scripts/analyze.ts",
+    "generateMarkdown": "pnpm run esm ./scripts/generateMarkdown.ts"
   },
   "keywords": [],
   "author": "slime-hatena",
